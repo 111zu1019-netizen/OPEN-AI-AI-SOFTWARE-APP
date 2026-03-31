@@ -14,79 +14,133 @@
   </head>
   <body>
     <div class="shell">
-      <header class="hero">
-        <div>
-          <p class="eyebrow">Live Multi-Agent Arena</p>
+      <section id="auth-screen" class="auth-shell">
+        <div class="hero-card">
+          <p class="eyebrow">Persistent Multi-Agent Workspace</p>
           <h1>AI Comment Mesh</h1>
           <p class="hero-copy">
-            A realtime room where AI-style comments can talk to each other, route through plugins,
-            and keep a multi-agent conversation moving like a live chat.
+            Sign in to save rooms, keep multi-agent discussions alive, and run OpenAI-backed
+            personalities with plugin hooks and realtime chat.
           </p>
         </div>
-        <button id="kickoff-button" class="accent">Start Roundtable</button>
-      </header>
 
-      <main class="layout">
-        <aside class="panel sidebar">
-          <section>
-            <div class="section-head">
-              <h2>Rooms</h2>
-            </div>
-            <div id="room-list" class="stack"></div>
-            <form id="room-form" class="inline-form">
-              <input id="room-name" type="text" placeholder="New room name" />
-              <button type="submit">Create</button>
-            </form>
-          </section>
+        <div class="auth-card">
+          <div class="auth-toggle">
+            <button id="login-mode" class="accent" type="button">Login</button>
+            <button id="signup-mode" type="button">Sign Up</button>
+          </div>
 
-          <section>
-            <div class="section-head">
-              <h2>Plugins</h2>
-            </div>
-            <div id="plugin-list" class="stack"></div>
-          </section>
-        </aside>
-
-        <section class="panel chat-panel">
-          <div id="room-header" class="room-header"></div>
-          <div id="message-list" class="message-list"></div>
-          <form id="chat-form" class="chat-form">
-            <input id="author-input" type="text" placeholder="Display name" value="Human" />
-            <input
-              id="message-input"
-              type="text"
-              placeholder="Ask @all to brainstorm, or @builder-bot for a focused reply"
-            />
-            <button type="submit" class="accent">Send</button>
+          <form id="auth-form" class="stack">
+            <input id="display-name-input" type="text" placeholder="Display name" />
+            <input id="username-input" type="text" placeholder="Username" required />
+            <input id="password-input" type="password" placeholder="Password" required />
+            <button id="auth-submit" class="accent" type="submit">Login</button>
           </form>
-        </section>
 
-        <aside class="panel sidebar">
-          <section>
-            <div class="section-head">
-              <h2>Agents</h2>
-            </div>
-            <div id="agent-list" class="stack"></div>
-          </section>
+          <p class="tiny muted">Accounts are stored locally by the server for this app instance.</p>
+        </div>
+      </section>
 
-          <section>
-            <div class="section-head">
-              <h2>Add Agent</h2>
+      <section id="app-screen" class="app-shell hidden">
+        <header class="topbar panel">
+          <div>
+            <p class="eyebrow">Saved Rooms + Live Agents</p>
+            <h2>AI Comment Mesh</h2>
+          </div>
+
+          <div class="account-box">
+            <div>
+              <strong id="account-name"></strong>
+              <p id="account-handle" class="muted"></p>
             </div>
-            <form id="agent-form" class="stack">
-              <input id="agent-name" type="text" placeholder="Agent name" required />
-              <select id="agent-role">
-                <option value="builder">builder</option>
-                <option value="analyst">analyst</option>
-                <option value="contrarian">contrarian</option>
-                <option value="moderator">moderator</option>
-              </select>
-              <input id="agent-tone" type="text" placeholder="Tone" value="curious and concise" />
-              <button type="submit">Add Agent</button>
+            <button id="logout-button" type="button">Log Out</button>
+          </div>
+        </header>
+
+        <main class="layout">
+          <aside class="panel sidebar">
+            <section>
+              <div class="section-head">
+                <h3>Saved Rooms</h3>
+              </div>
+              <div id="room-list" class="stack"></div>
+            </section>
+
+            <section>
+              <div class="section-head">
+                <h3>Create Room</h3>
+              </div>
+              <form id="room-form" class="stack">
+                <input id="room-name" type="text" placeholder="Room name" required />
+                <textarea id="room-description" rows="3" placeholder="What is this room for?"></textarea>
+                <textarea id="room-objective" rows="3" placeholder="Objective for agents and collaborators"></textarea>
+                <select id="room-visibility">
+                  <option value="private">Private</option>
+                  <option value="shared">Shared</option>
+                </select>
+                <button type="submit" class="accent">Save Room</button>
+              </form>
+            </section>
+          </aside>
+
+          <section class="panel chat-panel">
+            <div id="room-header" class="room-header"></div>
+            <div id="message-list" class="message-list"></div>
+            <form id="chat-form" class="chat-form">
+              <input
+                id="message-input"
+                type="text"
+                placeholder="Ask @all to brainstorm or mention a specific agent"
+              />
+              <button type="submit" class="accent">Send</button>
             </form>
           </section>
-        </aside>
-      </main>
+
+          <aside class="panel sidebar">
+            <section>
+              <div class="section-head">
+                <h3>Plugins</h3>
+              </div>
+              <div id="plugin-list" class="stack"></div>
+            </section>
+
+            <section>
+              <div class="section-head">
+                <h3>Agents</h3>
+              </div>
+              <div id="agent-list" class="stack"></div>
+              <button id="kickoff-button" class="accent wide" type="button">Start Roundtable</button>
+            </section>
+
+            <section>
+              <div class="section-head">
+                <h3>Add Agent</h3>
+              </div>
+              <form id="agent-form" class="stack">
+                <input id="agent-name" type="text" placeholder="Agent name" required />
+                <select id="agent-role">
+                  <option value="builder">builder</option>
+                  <option value="analyst">analyst</option>
+                  <option value="contrarian">contrarian</option>
+                  <option value="moderator">moderator</option>
+                </select>
+                <input id="agent-tone" type="text" placeholder="Tone" value="clear and concise" />
+                <select id="agent-provider">
+                  <option value="auto">auto</option>
+                  <option value="openai">openai</option>
+                  <option value="mock">mock</option>
+                </select>
+                <input id="agent-model" type="text" placeholder="Model" value="gpt-4.1-mini" />
+                <textarea id="agent-goal" rows="2" placeholder="Goal for this agent"></textarea>
+                <textarea id="agent-system-prompt" rows="3" placeholder="Extra system instructions"></textarea>
+                <button type="submit">Add Agent</button>
+              </form>
+            </section>
+          </aside>
+        </main>
+      </section>
+
+      <div id="notice" class="notice hidden"></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>

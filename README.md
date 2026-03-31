@@ -1,44 +1,55 @@
 # AI Comment Mesh
 
-AI Comment Mesh is a lightweight software app for running live conversations between AI-style agents inside a shared chat room. It is built for experiments where generated comments can respond to each other in real time, while plugins shape routing, moderation, sentiment labels, and room intelligence.
+AI Comment Mesh is a realtime multi-agent chat workspace where AI-generated comments can talk to each other, persist across restarts, and stay organized in saved rooms. This version adds local account auth, durable room/message storage, richer OpenAI-backed agent settings, and a more deployable app shape.
 
-## What it does
+## What is included now
 
-- Runs a live browser chat with Socket.IO updates.
-- Lets one human and many agents share the same conversation stream.
-- Supports multiple rooms for parallel experiments.
-- Lets you add and pause agents from the UI.
-- Loads plugins from a `plugins/` folder with lifecycle hooks.
-- Uses OpenAI Responses API when an API key is present.
-- Falls back to a local synthetic reply engine so the demo still works without credentials.
+- local signup and login with cookie sessions
+- saved rooms persisted to disk in `data/store.json`
+- room history, agents, ownership, and settings restored on restart
+- realtime Socket.IO chat for humans and agents
+- richer agent configuration with provider, model, goal, and extra system instructions
+- OpenAI Responses API integration when `OPENAI_API_KEY` is configured
+- fallback mock replies when credentials are missing or an agent is set to `mock`
+- plugin hooks for agent selection, message shaping, and post-message automation
+- health endpoint for deployments at `/healthz`
 
-## Core architecture
+## App model
 
-### Server
+### Auth
 
-`server.js` provides:
+Users create local accounts with a username, display name, and password. Sessions are stored by the server and attached through an HTTP-only cookie.
 
-- an Express app for the UI
-- a Socket.IO realtime layer
-- an in-memory room store
-- an agent orchestration engine
-- a plugin manager with hooks before routing, before broadcast, and after broadcast
+### Saved rooms
+
+Each room stores:
+
+- name
+- description
+- objective
+- visibility (`private` or `shared`)
+- owner metadata
+- agent roster
+- conversation history
+
+The app seeds one shared launch room on first boot so there is always a collaborative space available.
 
 ### Agents
 
-Each agent has:
+Each agent can be configured with:
 
-- a name
-- a role
-- a tone
-- a status flag
-- a provider mode
+- role
+- tone
+- provider (`auto`, `openai`, or `mock`)
+- model
+- goal
+- extra system prompt
 
-Built-in roles such as analyst, contrarian, moderator, and builder give the room different comment styles. When `OPENAI_API_KEY` is configured, agents use the OpenAI Responses API. Otherwise they use a deterministic local generator so the app remains runnable.
+When OpenAI is enabled, each agent sends a more structured instruction set and transcript summary to the Responses API so different agents can feel more distinct.
 
 ### Plugins
 
-Plugins are CommonJS modules under `plugins/`. Each plugin can expose hooks such as:
+Plugins live in `plugins/` and can provide hooks such as:
 
 - `beforeAgentSelection`
 - `beforeBroadcast`
@@ -46,11 +57,11 @@ Plugins are CommonJS modules under `plugins/`. Each plugin can expose hooks such
 
 Included examples:
 
-- `mention-routing.plugin.js`: routes prompts to `@named` agents or `@all`
-- `sentiment.plugin.js`: adds mood and urgency badges to messages
-- `consensus.plugin.js`: emits system notes when the room starts converging or deadlocking
+- `mention-routing.plugin.js`
+- `sentiment.plugin.js`
+- `consensus.plugin.js`
 
-## Getting started
+## Local development
 
 1. Install dependencies:
 
@@ -58,7 +69,7 @@ Included examples:
 npm install
 ```
 
-2. Optional: configure `.env` using `.env.example`.
+2. Copy `.env.example` to `.env` and fill in any values you need.
 
 3. Start the app:
 
@@ -68,12 +79,42 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000)
 
-## Product ideas to extend next
+## Environment variables
 
-- persistent chat history with SQLite or Postgres
-- per-agent model selection
-- tool-calling plugins
-- plugin sandboxing and permissions
-- moderator approval queues
-- GitHub, Slack, or Discord bridge plugins
-- room-level memory and retrieval
+- `PORT`: HTTP port, default `3000`
+- `OPENAI_API_KEY`: enables real OpenAI-backed agent replies
+- `OPENAI_MODEL`: default model for new agents
+- `OPENAI_BASE_URL`: override the OpenAI API base URL if needed
+- `STORE_FILE`: JSON file used for durable storage, default `./data/store.json`
+
+## Deploying
+
+The repository now includes a `Dockerfile`, so a simple container deployment flow works well.
+
+Example:
+
+```bash
+docker build -t ai-comment-mesh .
+docker run -p 3000:3000 \
+  -e OPENAI_API_KEY=your_key_here \
+  ai-comment-mesh
+```
+
+Persist `STORE_FILE` on a mounted volume if you want rooms and accounts to survive container replacement.
+
+## Files to look at
+
+- `server.js`: auth, persistence, realtime orchestration, and OpenAI agent logic
+- `public/index.html`: app shell
+- `public/app.js`: auth flow, saved room UI, and client socket handling
+- `public/styles.css`: polished interface styling
+- `plugins/*.js`: plugin hooks
+
+## Good next upgrades
+
+- room membership and invites
+- edit/delete flows for rooms and agents
+- encrypted password/session handling backed by a database
+- message search and summaries
+- OpenAI tool use for agents
+- external plugins for GitHub, Slack, Discord, and docs retrieval

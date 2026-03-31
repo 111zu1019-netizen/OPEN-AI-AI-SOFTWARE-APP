@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Live multi-agent chat arena for AI-generated comments with plugin hooks.",
   "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"
